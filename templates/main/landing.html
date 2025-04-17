@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="jumbotron bg-light p-5 rounded">
+            <h1 class="display-4">Monitor de Atualizações da Plataforma Brasil</h1>
+            <p class="lead">Sistema automatizado para monitorar atualizações na Plataforma Brasil e enviar notificações por email.</p>
+            <hr class="my-4">
+            <p>Esta ferramenta verifica periodicamente a Plataforma Brasil em busca de atualizações e notifica você quando mudanças são detectadas.</p>
+            <p class="lead">
+                {% if current_user.is_authenticated %}
+                <a class="btn btn-primary btn-lg" href="{{ url_for('monitor.index') }}" role="button">Acessar Painel</a>
+                {% else %}
+                <a class="btn btn-primary btn-lg" href="{{ url_for('auth.login') }}" role="button">Fazer Login</a>
+                <a class="btn btn-outline-primary btn-lg" href="{{ url_for('auth.register') }}" role="button">Registrar</a>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-bell display-4 text-primary"></i>
+                <h3 class="card-title mt-3">Monitoramento Automático</h3>
+                <p class="card-text">Verificações programadas 3 vezes ao dia durante o horário comercial (9h, 13h e 17h).</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-envelope display-4 text-primary"></i>
+                <h3 class="card-title mt-3">Notificações por Email</h3>
+                <p class="card-text">Receba alertas por email quando atualizações forem detectadas na Plataforma Brasil.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-gear display-4 text-primary"></i>
+                <h3 class="card-title mt-3">Configuração Simples</h3>
+                <p class="card-text">Interface amigável para configurar URLs monitoradas e preferências de notificação.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Monitoramento de CAAEs</h4>
+                <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addCAAEModal">
+                    <i class="bi bi-plus-circle"></i> Adicionar CAAE
+                </button>
+            </div>
+            <div class="card-body">
+                {% if caae_list %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>CAAE</th>
+                                <th>Título</th>
+                                <th>Pesquisador</th>
+                                <th>Instituição</th>
+                                <th>Status</th>
+                                <th>Última Verificação</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for caae in caae_list %}
+                            <tr>
+                                <td>{{ caae.numero }}</td>
+                                <td>{{ caae.titulo }}</td>
+                                <td>{{ caae.pesquisador }}</td>
+                                <td>{{ caae.instituicao }}</td>
+                                <td>
+                                    {% if caae.status %}
+                                    <span class="badge bg-info">{{ caae.status }}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Não verificado</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ caae.ultima_atualizacao|formatdatetime if caae.ultima_atualizacao else 'Nunca' }}</td>
+                                <td>
+                                    <a href="{{ url_for('monitor.edit_caae', caae_id=caae.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteCAAEModal{{ caae.id }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    
+                                    <!-- Modal de confirmação de exclusão -->
+                                    <div class="modal fade" id="deleteCAAEModal{{ caae.id }}" tabindex="-1" aria-labelledby="deleteCAAEModalLabel{{ caae.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteCAAEModalLabel{{ caae.id }}">Confirmar Exclusão</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Tem certeza que deseja excluir o CAAE "{{ caae.numero }}"?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                    <form action="{{ url_for('monitor.delete_caae', caae_id=caae.id) }}" method="post">
+                                                        <button type="submit" class="btn btn-danger">Excluir</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center">Nenhum CAAE configurado para monitoramento.</p>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <form action="{{ url_for('monitor.check_caae') }}" method="post" class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-arrow-repeat"></i> Verificar Status dos CAAEs
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Logs Recentes de CAAEs</h4>
+            </div>
+            <div class="card-body">
+                {% if caae_logs %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Tipo</th>
+                                <th>CAAE</th>
+                                <th>Status Anterior</th>
+                                <th>Status Atual</th>
+                                <th>Mensagem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in caae_logs %}
+                            <tr>
+                                <td>{{ log.timestamp|formatdatetime }}</td>
+                                <td>
+                                    {% if log.tipo == 'verificacao' %}
+                                    <span class="badge bg-info">Verificação</span>
+                                    {% elif log.tipo == 'atualizacao' %}
+                                    <span class="badge bg-success">Atualização</span>
+                                    {% elif log.tipo == 'erro' %}
+                                    <span class="badge bg-danger">Erro</span>
+                                    {% elif log.tipo == 'configuracao' %}
+                                    <span class="badge bg-secondary">Configuração</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ log.tipo }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ log.caae.numero if log.caae else '-' }}</td>
+                                <td>{{ log.status_anterior or '-' }}</td>
+                                <td>{{ log.status_atual or '-' }}</td>
+                                <td>{{ log.mensagem }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center">Nenhum registro de log encontrado.</p>
+                {% endif %}
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('monitor.view_caae_logs') }}" class="btn btn-outline-primary">Ver Todos os Logs de CAAEs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para adicionar CAAE -->
+<div class="modal fade" id="addCAAEModal" tabindex="-1" aria-labelledby="addCAAEModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCAAEModalLabel">Adicionar CAAE</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('monitor.add_caae') }}" method="post">
+                    {{ caae_form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ caae_form.numero.label(class="form-label") }}
+                        {{ caae_form.numero(class="form-control") }}
+                        {% for error in caae_form.numero.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text">Formato: 12345678.9.0000.1234</div>
+                    </div>
+                    <div class="mb-3">
+                        {{ caae_form.titulo.label(class="form-label") }}
+                        {{ caae_form.titulo(class="form-control") }}
+                        {% for error in caae_form.titulo.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ caae_form.pesquisador.label(class="form-label") }}
+                        {{ caae_form.pesquisador(class="form-control") }}
+                        {% for error in caae_form.pesquisador.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ caae_form.instituicao.label(class="form-label") }}
+                        {{ caae_form.instituicao(class="form-control") }}
+                        {% for error in caae_form.instituicao.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3 form-check">
+                        {{ caae_form.ativo(class="form-check-input") }}
+                        {{ caae_form.ativo.label(class="form-check-label") }}
+                    </div>
+                    <div class="d-grid">
+                        {{ caae_form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

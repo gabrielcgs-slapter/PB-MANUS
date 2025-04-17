@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="jumbotron bg-light p-5 rounded-3 mb-4">
+    <div class="container">
+        <h1 class="display-4">Monitor Plataforma Brasil</h1>
+        <p class="lead">Sistema automatizado para monitoramento de atualizações na Plataforma Brasil e acompanhamento de CAAEs.</p>
+        <hr class="my-4">
+        <p>Mantenha-se informado sobre todas as mudanças na Plataforma Brasil e receba notificações automáticas sobre atualizações em seus estudos.</p>
+        <a class="btn btn-primary btn-lg" href="{{ url_for('auth.login') }}" role="button">Começar</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-bell fs-1 text-primary mb-3"></i>
+                    <h5 class="card-title">Notificações Automáticas</h5>
+                    <p class="card-text">Receba alertas por email sempre que houver atualizações na Plataforma Brasil ou em seus estudos.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-clock-history fs-1 text-primary mb-3"></i>
+                    <h5 class="card-title">Monitoramento Contínuo</h5>
+                    <p class="card-text">Verificações automáticas programadas para garantir que você nunca perca uma atualização importante.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-search fs-1 text-primary mb-3"></i>
+                    <h5 class="card-title">Acompanhamento de CAAEs</h5>
+                    <p class="card-text">Monitore o status de seus estudos através do número CAAE e receba alertas sobre mudanças.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

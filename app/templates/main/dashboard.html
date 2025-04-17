@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Dashboard</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card text-center mb-3">
+                            <div class="card-body">
+                                <h1 class="display-4">{{ caae_count }}</h1>
+                                <p class="lead">CAAEs Monitorados</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center mb-3">
+                            <div class="card-body">
+                                <h1 class="display-4">{{ recent_caae_logs|selectattr('tipo', 'equalto', 'atualizacao')|list|length }}</h1>
+                                <p class="lead">Atualizações Recentes</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center mb-3">
+                            <div class="card-body">
+                                <h1 class="display-4">
+                                    {% if config and config.ativo %}
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                    {% else %}
+                                    <i class="bi bi-x-circle-fill text-danger"></i>
+                                    {% endif %}
+                                </h1>
+                                <p class="lead">Status do Monitoramento</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Últimas Atualizações de CAAEs</h4>
+            </div>
+            <div class="card-body">
+                {% if recent_caae_logs %}
+                <div class="list-group">
+                    {% for log in recent_caae_logs %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ log.caae.numero if log.caae else 'N/A' }}</h5>
+                            <small>{{ log.timestamp|formatdatetime }}</small>
+                        </div>
+                        <p class="mb-1">{{ log.mensagem }}</p>
+                        {% if log.status_anterior and log.status_atual %}
+                        <small class="text-muted">Status alterado de "{{ log.status_anterior }}" para "{{ log.status_atual }}"</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-center">Nenhuma atualização recente.</p>
+                {% endif %}
+            </div>
+            <div class="card-footer text-center">
+                <a href="{{ url_for('monitor.caae_index') }}" class="btn btn-outline-primary">Gerenciar CAAEs</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Últimas Verificações de URLs</h4>
+            </div>
+            <div class="card-body">
+                {% if recent_logs %}
+                <div class="list-group">
+                    {% for log in recent_logs %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ log.url.nome if log.url else 'Sistema' }}</h5>
+                            <small>{{ log.timestamp|formatdatetime }}</small>
+                        </div>
+                        <p class="mb-1">{{ log.mensagem }}</p>
+                        <small class="text-muted">
+                            {% if log.tipo == 'verificacao' %}
+                            <span class="badge bg-info">Verificação</span>
+                            {% elif log.tipo == 'atualizacao' %}
+                            <span class="badge bg-success">Atualização</span>
+                            {% elif log.tipo == 'erro' %}
+                            <span class="badge bg-danger">Erro</span>
+                            {% elif log.tipo == 'email' %}
+                            <span class="badge bg-warning">Email</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ log.tipo }}</span>
+                            {% endif %}
+                        </small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-center">Nenhum log recente.</p>
+                {% endif %}
+            </div>
+            <div class="card-footer text-center">
+                <a href="{{ url_for('monitor.view_logs') }}" class="btn btn-outline-primary">Ver Todos os Logs</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Configurações Atuais</h4>
+            </div>
+            <div class="card-body">
+                {% if config %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Email para notificações:</strong> {{ config.email_destinatario }}</p>
+                        <p><strong>Horários de verificação:</strong> {{ config.horario_verificacao_1 }}, {{ config.horario_verificacao_2 }}, {{ config.horario_verificacao_3 }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Status:</strong> 
+                            {% if config.ativo %}
+                            <span class="badge bg-success">Ativo</span>
+                            {% else %}
+                            <span class="badge bg-danger">Inativo</span>
+                            {% endif %}
+                        </p>
+                        <p><strong>Última atualização:</strong> {{ config.ultima_atualizacao|formatdatetime }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-center">Nenhuma configuração encontrada. Configure o monitoramento para começar.</p>
+                {% endif %}
+            </div>
+            <div class="card-footer text-center">
+                <a href="{{ url_for('monitor.index') }}" class="btn btn-outline-primary">Editar Configurações</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

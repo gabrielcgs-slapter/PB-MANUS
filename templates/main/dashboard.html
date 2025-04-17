@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Dashboard</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-light mb-3">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Status do Monitoramento</h5>
+                                {% if config and config.ativo %}
+                                <span class="badge bg-success fs-5">Ativo</span>
+                                {% else %}
+                                <span class="badge bg-danger fs-5">Inativo</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light mb-3">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">URLs Monitoradas</h5>
+                                <span class="fs-3">{{ urls|length if urls else 0 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light mb-3">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">Próxima Verificação</h5>
+                                {% if config %}
+                                <span class="fs-5">{{ config.horario_verificacao_1 }}</span>
+                                {% else %}
+                                <span class="fs-5">Não configurado</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Atividade Recente</h4>
+            </div>
+            <div class="card-body">
+                {% if recent_logs %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Tipo</th>
+                                <th>URL</th>
+                                <th>Mensagem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_logs %}
+                            <tr>
+                                <td>{{ log.timestamp|formatdatetime }}</td>
+                                <td>
+                                    {% if log.tipo == 'verificacao' %}
+                                    <span class="badge bg-info">Verificação</span>
+                                    {% elif log.tipo == 'atualizacao' %}
+                                    <span class="badge bg-success">Atualização</span>
+                                    {% elif log.tipo == 'erro' %}
+                                    <span class="badge bg-danger">Erro</span>
+                                    {% elif log.tipo == 'email' %}
+                                    <span class="badge bg-primary">Email</span>
+                                    {% elif log.tipo == 'configuracao' %}
+                                    <span class="badge bg-secondary">Configuração</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ log.tipo }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ log.url.nome if log.url else '-' }}</td>
+                                <td>{{ log.mensagem }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center">Nenhum registro de atividade encontrado.</p>
+                {% endif %}
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('monitor.view_logs') }}" class="btn btn-outline-primary">Ver Todos os Logs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Ações Rápidas</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <a href="{{ url_for('monitor.index') }}" class="btn btn-outline-primary btn-lg d-block mb-3">
+                            <i class="bi bi-gear"></i> Configurações
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <form action="{{ url_for('monitor.run_monitor') }}" method="post">
+                            <button type="submit" class="btn btn-outline-success btn-lg d-block mb-3 w-100">
+                                <i class="bi bi-play-circle"></i> Executar Verificação
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-4">
+                        <form action="{{ url_for('monitor.test_email') }}" method="post">
+                            <button type="submit" class="btn btn-outline-info btn-lg d-block mb-3 w-100">
+                                <i class="bi bi-envelope"></i> Testar Email
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

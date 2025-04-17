@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Logs do Monitor</h4>
+                <a href="{{ url_for('monitor.index') }}" class="btn btn-light btn-sm">
+                    <i class="bi bi-gear"></i> Voltar para Configurações
+                </a>
+            </div>
+            <div class="card-body">
+                {% if logs.items %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Tipo</th>
+                                <th>URL</th>
+                                <th>Mensagem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs.items %}
+                            <tr>
+                                <td>{{ log.timestamp|formatdatetime }}</td>
+                                <td>
+                                    {% if log.tipo == 'verificacao' %}
+                                    <span class="badge bg-info">Verificação</span>
+                                    {% elif log.tipo == 'atualizacao' %}
+                                    <span class="badge bg-success">Atualização</span>
+                                    {% elif log.tipo == 'erro' %}
+                                    <span class="badge bg-danger">Erro</span>
+                                    {% elif log.tipo == 'email' %}
+                                    <span class="badge bg-primary">Email</span>
+                                    {% elif log.tipo == 'configuracao' %}
+                                    <span class="badge bg-secondary">Configuração</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">{{ log.tipo }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ log.url.nome if log.url else '-' }}</td>
+                                <td>{{ log.mensagem }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Paginação -->
+                <nav aria-label="Navegação de páginas">
+                    <ul class="pagination justify-content-center">
+                        {% if logs.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('monitor.view_logs', page=logs.prev_num) }}">Anterior</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Anterior</span>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page_num in logs.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                            {% if page_num %}
+                                {% if page_num == logs.page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('monitor.view_logs', page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if logs.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('monitor.view_logs', page=logs.next_num) }}">Próxima</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Próxima</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% else %}
+                <p class="text-center">Nenhum registro de log encontrado.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

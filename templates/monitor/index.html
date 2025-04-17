@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Configurações do Monitor</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('monitor.update_config') }}">
+                    {{ config_form.hidden_tag() }}
+                    
+                    <h5 class="mb-3">Configurações de Email</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ config_form.email_destinatario.label(class="form-label") }}
+                            {{ config_form.email_destinatario(class="form-control") }}
+                            {% for error in config_form.email_destinatario.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                            <div class="form-text">Email que receberá as notificações de atualizações</div>
+                        </div>
+                        <div class="col-md-6">
+                            {{ config_form.email_remetente.label(class="form-label") }}
+                            {{ config_form.email_remetente(class="form-control") }}
+                            {% for error in config_form.email_remetente.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                            <div class="form-text">Email que enviará as notificações</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            {{ config_form.email_senha.label(class="form-label") }}
+                            {{ config_form.email_senha(class="form-control") }}
+                            {% for error in config_form.email_senha.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                            <div class="form-text">Deixe em branco para manter a senha atual</div>
+                        </div>
+                        <div class="col-md-4">
+                            {{ config_form.smtp_servidor.label(class="form-label") }}
+                            {{ config_form.smtp_servidor(class="form-control") }}
+                            {% for error in config_form.smtp_servidor.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-4">
+                            {{ config_form.smtp_porta.label(class="form-label") }}
+                            {{ config_form.smtp_porta(class="form-control") }}
+                            {% for error in config_form.smtp_porta.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <h5 class="mb-3 mt-4">Horários de Verificação</h5>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            {{ config_form.horario_verificacao_1.label(class="form-label") }}
+                            {{ config_form.horario_verificacao_1(class="form-control") }}
+                            {% for error in config_form.horario_verificacao_1.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                            <div class="form-text">Formato: HH:MM (ex: 09:00)</div>
+                        </div>
+                        <div class="col-md-4">
+                            {{ config_form.horario_verificacao_2.label(class="form-label") }}
+                            {{ config_form.horario_verificacao_2(class="form-control") }}
+                            {% for error in config_form.horario_verificacao_2.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                            <div class="form-text">Formato: HH:MM (ex: 13:00)</div>
+                        </div>
+                        <div class="col-md-4">
+                            {{ config_form.horario_verificacao_3.label(class="form-label") }}
+                            {{ config_form.horario_verificacao_3(class="form-control") }}
+                            {% for error in config_form.horario_verificacao_3.errors %}
+                                <div class="text-danger">{{ error }}</div>
+                            {% endfor %}
+                            <div class="form-text">Formato: HH:MM (ex: 17:00)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ config_form.ativo(class="form-check-input") }}
+                        {{ config_form.ativo.label(class="form-check-label") }}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        {{ config_form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">URLs Monitoradas</h4>
+                <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addUrlModal">
+                    <i class="bi bi-plus-circle"></i> Adicionar URL
+                </button>
+            </div>
+            <div class="card-body">
+                {% if urls %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>URL</th>
+                                <th>Status</th>
+                                <th>Última Verificação</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for url in urls %}
+                            <tr>
+                                <td>{{ url.nome }}</td>
+                                <td><a href="{{ url.url }}" target="_blank">{{ url.url }}</a></td>
+                                <td>
+                                    {% if url.ativo %}
+                                    <span class="badge bg-success">Ativo</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inativo</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ url.ultima_verificacao|formatdatetime if url.ultima_verificacao else 'Nunca' }}</td>
+                                <td>
+                                    <a href="{{ url_for('monitor.edit_url', url_id=url.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteUrlModal{{ url.id }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    
+                                    <!-- Modal de confirmação de exclusão -->
+                                    <div class="modal fade" id="deleteUrlModal{{ url.id }}" tabindex="-1" aria-labelledby="deleteUrlModalLabel{{ url.id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteUrlModalLabel{{ url.id }}">Confirmar Exclusão</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Tem certeza que deseja excluir a URL "{{ url.nome }}"?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                    <form action="{{ url_for('monitor.delete_url', url_id=url.id) }}" method="post">
+                                                        <button type="submit" class="btn btn-danger">Excluir</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center">Nenhuma URL configurada para monitoramento.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Verificação Manual</h4>
+            </div>
+            <div class="card-body">
+                <p>Execute uma verificação manual para testar o monitoramento.</p>
+                <form action="{{ url_for('monitor.run_monitor') }}" method="post">
+                    {{ run_monitor_form.hidden_tag() }}
+                    <div class="d-grid">
+                        {{ run_monitor_form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Teste de Email</h4>
+            </div>
+            <div class="card-body">
+                <p>Envie um email de teste para verificar as configurações de email.</p>
+                <form action="{{ url_for('monitor.test_email') }}" method="post">
+                    {{ test_email_form.hidden_tag() }}
+                    <div class="d-grid">
+                        {{ test_email_form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para adicionar URL -->
+<div class="modal fade" id="addUrlModal" tabindex="-1" aria-labelledby="addUrlModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addUrlModalLabel">Adicionar URL</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('monitor.add_url') }}" method="post">
+                    {{ url_form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ url_form.nome.label(class="form-label") }}
+                        {{ url_form.nome(class="form-control") }}
+                        {% for error in url_form.nome.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ url_form.url.label(class="form-label") }}
+                        {{ url_form.url(class="form-control") }}
+                        {% for error in url_form.url.errors %}
+                            <div class="text-danger">{{ error }}</div>
+                        {% endfor %}
+                        <div class="form-text">URL completa, incluindo http:// ou https://</div>
+                    </div>
+                    <div class="mb-3 form-check">
+                        {{ url_form.ativo(class="form-check-input") }}
+                        {{ url_form.ativo.label(class="form-check-label") }}
+                    </div>
+                    <div class="d-grid">
+                        {{ url_form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
